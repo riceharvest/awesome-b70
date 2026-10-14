@@ -1,0 +1,36 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* wide screens: tables may scroll sideways inside their own box, never the page */
+  .markdown-body table { display: block; width: 100%; overflow-x: auto; }
+  .markdown-body td img { display: inline-block; margin: 1px 0; }
+  /* phones: each table row becomes a card, each cell labelled with its column header */
+  @media (max-width: 700px) {
+    .markdown-body table, .markdown-body thead, .markdown-body tbody,
+    .markdown-body tr, .markdown-body th, .markdown-body td { display: block; width: 100%; }
+    .markdown-body table { overflow: visible; border: 0; }
+    .markdown-body thead { position: absolute; left: -9999px; }
+    .markdown-body tr { border: 1px solid #d0d7de; border-radius: 8px; margin: 0 0 12px; padding: 4px 10px; background: #fff; }
+    .markdown-body tr:nth-child(2n) { background: #fff; }
+    .markdown-body table td { border: 0; padding: 6px 0; text-align: left !important; }
+    .markdown-body table td + td { border-top: 1px solid #eaeef2; }
+    .markdown-body td[data-label]::before { content: attr(data-label); display: block; font-size: 12px; font-weight: 600;
+      color: #57606a; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 2px; }
+    .markdown-body td:first-child { font-weight: 600; }
+    .markdown-body td:first-child[data-label]::before { display: none; }
+    .markdown-body td:empty, .markdown-body td.dash { display: none; }
+    .markdown-body pre { white-space: pre-wrap; word-break: break-all; }
+  }
+</style>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".markdown-body table").forEach(function (t) {
+      var heads = Array.from(t.querySelectorAll("thead th")).map(function (th) { return th.textContent.trim(); });
+      t.querySelectorAll("tbody tr").forEach(function (tr) {
+        Array.from(tr.children).forEach(function (td, i) {
+          if (heads[i]) td.setAttribute("data-label", heads[i]);
+          if (td.textContent.trim() === "—" && !td.querySelector("img")) td.classList.add("dash");
+        });
+      });
+    });
+  });
+</script>
