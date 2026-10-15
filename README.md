@@ -30,7 +30,8 @@ Last reviewed **2026-10-15**. The status badges in the bug table are live. Corre
    build: [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds) has prebuilt llama.cpp SYCL for the B70
    (compiled ahead of time for the card, oneAPI runtime bundled) and Vulkan with the B70 fixes. To serve many users
    or long context, use vLLM.
-4. **Skim the [known problems](#known-problems-and-workarounds)** before you lose an evening to one of them.
+4. **For numbers** (which engine, Mesa version and flags are fastest for which model), see the [performance guide](performance.md).
+5. **Skim the [known problems](#known-problems-and-workarounds)** before you lose an evening to one of them.
 
 ## Pick an engine
 
@@ -189,6 +190,7 @@ Intel's [llm-scaler](https://github.com/intel/llm-scaler) release notes list the
 
 ## Benchmarks
 
+- **[B70 performance guide](performance.md)**: everything we measured on one B70 (Mesa 25 vs 26, SYCL vs Vulkan, MTP in llama.cpp and vLLM, decode fusions, fp8 lm_head, MoE GEMV), each number linked to its test notes, plus which engine to use for which model.
 - [B70 leaderboard](leaderboard.md): the fastest submitted B70 runs from localmaxxing.com (model, engine, quant, tok/s, flags, repro links), rebuilt daily, with how to reproduce the top runs.
 - [b70-bench results](https://github.com/riceharvest/b70-bench/blob/main/RESULTS.md) (collecting first results): SYCL and Vulkan side by side, 27B and MoE, decode after 8K/32K context, with driver and firmware per row. Run it and add yours.
 - [PMZFX/intel-arc-pro-b70-benchmarks](https://github.com/PMZFX/intel-arc-pro-b70-benchmarks): many llama.cpp SYCL measurements, dual-GPU scaling, video generation.
