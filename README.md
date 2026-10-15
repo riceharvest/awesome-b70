@@ -81,6 +81,19 @@ Correctness on Mesa 26 with the fixes: test-backend-ops MUL_MAT 2279/2279, FLASH
 prompts were not re-measured on Mesa 26. Fedora 43 ships 25.3.6; `b70-doctor` shows how to run a newer Mesa from a
 local prefix for LLM apps only.
 
+**Speculative decoding with the model's MTP head** (`llama-server --spec-type draft-mtp --spec-draft-n-max N`,
+Qwen3.6-35B-A3B **MTP** UD-Q4_K_M, `-fa on -c 8192 -np 1`, three prompts of 256 tokens, greedy, Mesa 25.3.6,
+mean tok/s):
+
+| backend | no MTP | MTP n=1 | n=2 | n=3 | output vs no MTP |
+|---|---|---|---|---|---|
+| Vulkan, [`vk-b70-stack`](https://github.com/riceharvest/llama.cpp/tree/vk-b70-stack) | 70.7 | 91.3 | 100.8 | **108.5** | byte-identical (all 9 runs) |
+| SYCL master `a0e6dc738` | 86.7 | 69.0 | 77.0 | 80.9 | differs (all 9 runs) |
+
+On Vulkan, MTP n=3 gave +53% with draft acceptance of 62-93% and exactly the same greedy text. On SYCL it was slower than
+no MTP and changed the greedy output in this test; the likely cause is that SYCL scores a multi-token batch with
+different kernels than a single token. Not confirmed yet. Until that's resolved, use MTP with Vulkan, not SYCL.
+
 **Experimental Vulkan fixes** (branches on a llama.cpp fork, not merged upstream, same machine and model):
 
 | test (Qwen3.8-27B) | Vulkan master | with fixes | SYCL master | fix |
