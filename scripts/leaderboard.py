@@ -101,8 +101,8 @@ def best_per_setup(rows):
 
 
 def table(rows, n):
-    out = ["| # | decode tok/s | model | quant | engine | spec | ctx | prefill tok/s | date | run | repro |",
-           "|---:|---:|---|---|---|---|---:|---:|---|---|---|"]
+    out = ["| # | decode tok/s | model | quant | engine | spec | ctx | prefill tok/s | date | links |",
+           "|---:|---:|---|---|---|---|---:|---:|---|---|"]
     for i, r in enumerate(rows[:n], 1):
         hf = (r.get("model") or {}).get("hfId") or "?"
         model = (f"[{cell(hf.split('/')[-1], 40)}](https://huggingface.co/{urllib.parse.quote(hf, safe='/')})"
@@ -112,7 +112,7 @@ def table(rows, n):
         out.append(
             f"| {i} | **{r['tokSOut']:.1f}** | {model} | {cell((r.get('engine') or {}).get('quantization'), 18)} "
             f"| {engine(r)} | {spec(r)} | {cell(r.get('contextLength'))} | {pre} | {cell((r.get('createdAt') or '')[:10])} "
-            f"| [run]({SITE}{urllib.parse.quote(str(r['id']))}) | {f'[repro]({rl})' if rl else ''} |")
+            f"| [run]({SITE}{urllib.parse.quote(str(r['id']))}){f' · [repro]({rl})' if rl else ''} |")
     return out
 
 
