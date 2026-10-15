@@ -103,9 +103,12 @@ gsm8k (first 100) stayed at 96-97/100 in every arm.
 ## Tools
 
 - [b70-doctor](https://github.com/riceharvest/b70-doctor): checks driver, firmware, PCIe link, Resizable BAR, Mesa and
-  compute-runtime versions, and prints the fix.
+  compute-runtime versions, and prints the fix, including the exact Mesa 26 update command for your distro and outdated
+  B70 container images.
 - [b70-bench](https://github.com/riceharvest/b70-bench): the standard benchmark. `--prebuilt` downloads the B70 builds,
   so one command benchmarks SYCL and Vulkan and offers to add your result to the shared table:
   `curl -fsSL https://raw.githubusercontent.com/riceharvest/b70-bench/main/b70-bench.sh | bash -s -- --prebuilt --tier quick`
 - [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds): prebuilt llama.cpp SYCL (AOT for the B70, oneAPI
   runtime bundled) and Vulkan with the B70 fixes.
+  Also as a [Docker image](https://github.com/riceharvest/b70-llama-builds#docker-image) that brings its own Mesa 26.2.4
+  and compute-runtime, so Vulkan gets the Mesa 26 speed on any host distro.
