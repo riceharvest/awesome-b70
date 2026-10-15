@@ -20,6 +20,7 @@ time. Measured 2026-10-14/15.
 | Qwen3.8-27B in llama.cpp | Vulkan b70 build on **Mesa 26.2.5** | **25.3** tok/s (SYCL 21.9) ([test 002](results/testq-002-mesa26-vulkan.md)) |
 | long prompts in llama.cpp | SYCL | prompt after 32K context: 720 vs 86 tok/s on Vulkan (27B, Mesa 25) ([hub table](./#measured-sycl-vs-vulkan-on-a-b70)) |
 | NVIDIA Nemotron 3.5 Bolt 74B-A9B (vision) | llama.cpp master Vulkan on **Mesa 26.2**, NVIDIA's 24 GB GGUF + LiLiCorr drafter | **43.2** tok/s decode, **54.4** on code with the drafter, 81.6 total with 4 users ([below](#nemotron-35-bolt-74b-a9b)) |
+| Nemotron 3.5 Bolt closer to BF16, card + 32 GB+ RAM | our [Q4_K_M from BF16](https://huggingface.co/darioooooo0o/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-GGUF), llama.cpp b11669+, experts partly in RAM | KL 0.015 vs 0.169 for NVIDIA's 2-bit, PPL 4.56 vs 5.28; B70 speed pending ([below](#bigger-than-2-bit-ggufs-from-the-bf16-weights)) |
 | no oneAPI on the machine | Vulkan, with **Mesa 26** | Mesa 26 more than doubles MoE decode vs 25 ([below](#mesa-25-vs-26)) |
 
 Rule of thumb: on Mesa 25.x use llama.cpp SYCL for speed; on Mesa 26 Vulkan is as fast or faster on decode. For MTP in
@@ -93,8 +94,38 @@ NVIDIA's Mamba-2/Transformer LatentMoE (74B, 9B active, vision), the
 | 4 users at once, total | 81.6 | 54.5 |
 
 Mesa 26 is worth ~70% here. Vision works with the mmproj on the CPU (~5 s per image). With the drafter at 32K context
-the card uses 22.9 GiB. SYCL + drafter currently aborts (see [known problems](./#llamacpp)). 3- to 8-bit files made from
-the BF16 weights (for cards with more system RAM) are in progress.
+the card uses 22.9 GiB. SYCL + drafter currently aborts (see [known problems](./#llamacpp)).
+
+### Bigger than 2-bit: GGUFs from the BF16 weights
+
+Our [3- to 8-bit ladder](https://huggingface.co/darioooooo0o/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-GGUF), quantized from
+NVIDIA's BF16 checkpoint ([quality, memory and method](results/bolt-gguf-ladder.md)). On the Hub now: **Q4_K_M**.
+Coming: IQ3_XXS, Q3_K_M, IQ4_XS, Q5_K_M, Q6_K, Q8_0. Needs llama.cpp b11669+ (Ollama only from the 0.40.5-rc2
+pre-release, untested; LM Studio unverified; the b70-llama-builds release is not on b11669 yet, see
+[known problems](./#llamacpp)). **B70 speed: pending.**
+
+Which file: the experts that don't fit in VRAM stay in system RAM (`-ncmoe`). Weights + 32K context + buffers,
+computed, not measured ([table](results/bolt-gguf-ladder.md#memory-computed-not-measured)):
+
+| file | size GiB | 24 GB card | 32 GB card (B70) |
+|---|---|---|---|
+| NVIDIA 24 GB (QAT IQ2) | 20.5 | fits whole | fits whole |
+| IQ3_XXS (coming) | 29.8 | ~21 GiB VRAM + ~10 GiB RAM | ~29 + ~3 |
+| Q3_K_M (coming) | 36.1 | ~21 + ~17 | — |
+| IQ4_XS (coming) | 39.1 | ~21 + ~20 | — |
+| **Q4_K_M** | 45.0 | ~21 + ~26 (`-ncmoe 64`) | ~28 + ~18 (`-ncmoe 46`) |
+
+Quality: llama-perplexity, wikitext-2 test, 16 x 2048 tokens; KL and same top-1 token vs our Q8_0
+([details](results/bolt-gguf-ladder.md#quality)):
+
+| file | size GiB | PPL | KL mean | KL 99th pct | same top-1 |
+|---|---|---|---|---|---|
+| NVIDIA 24 GB (QAT IQ2) | 20.5 | 5.284 ± 0.096 | 0.169 | 1.59 | 84.2% |
+| **Q4_K_M** (imatrix) | 45.0 | **4.563 ± 0.077** | **0.0150** | 0.117 | 94.1% |
+| Q4_K_M, no imatrix | 45.0 | 4.566 ± 0.077 | 0.0151 | 0.118 | 94.2% |
+
+NVIDIA's file comes from its own QAT-retrained checkpoint, so its KL vs our BF16-based Q8_0 includes the retraining,
+not only rounding; PPL compares both on equal terms. imatrix vs no imatrix is within noise.
 
 ## vLLM: Qwen3.6-35B-A3B, one request
 
