@@ -24,7 +24,9 @@ Last reviewed **2026-10-15**. The status badges in the bug table are live. Corre
 2. **Turn on Resizable BAR** in the BIOS ("Above 4G Decoding" + "Re-Size BAR Support", CSM off). The doctor tells you if it's off.
 3. **Pick an engine** from the table below. If you just want to chat, use Ollama or LM Studio. **If you want speed,
    use llama.cpp with SYCL:** on a B70 it decodes about 1.7× faster than the Vulkan path that Ollama and LM Studio use,
-   and handles long prompts up to 8× faster ([measured below](#measured-sycl-vs-vulkan-on-a-b70)). To serve many users
+   and handles long prompts up to 8× faster ([measured below](#measured-sycl-vs-vulkan-on-a-b70)). Skip the hour-long
+   build: [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds) has prebuilt llama.cpp SYCL for the B70
+   (compiled ahead of time for the card, oneAPI runtime bundled) and Vulkan with the B70 fixes. To serve many users
    or long context, use vLLM.
 4. **Skim the [known problems](#known-problems-and-workarounds)** before you lose an evening to one of them.
 
@@ -34,7 +36,7 @@ Last reviewed **2026-10-15**. The status badges in the bug table are live. Corre
 |---|---|---|---|
 | [Ollama](https://github.com/ollama/ollama) | Vulkan (on by default when the backend is installed) | easiest start | Needs Mesa's Intel Vulkan driver. The `ollama` user needs access to `/dev/dri/renderD*` (the render group; Ollama's docs mention this for AMD, and it's the same permission). `sudo setcap cap_perfmon+ep /usr/local/bin/ollama` lets it see free VRAM ([docs](https://github.com/ollama/ollama/blob/main/docs/gpu.mdx)). SYCL support is only a [proposal](https://github.com/ollama/ollama/issues/16930). |
 | [LM Studio](https://lmstudio.ai) | Vulkan llama.cpp runtime | GUI, model browser | Same Vulkan caveats as llama.cpp Vulkan. |
-| [llama.cpp](https://github.com/ggml-org/llama.cpp) SYCL | Level Zero / oneAPI | best llama.cpp speed, long context | Build with `-DGGML_SYCL_F16=ON`: it is off by default and gives about 3.7× prefill ([tuning log](https://github.com/ggml-org/llama.cpp/discussions/27593)). Don't set `GGML_SYCL_ENABLE_OPT=0`; the same log measured it costing about 68% of generation speed. Docker: `ghcr.io/ggml-org/llama.cpp:server-intel`. |
+| [llama.cpp](https://github.com/ggml-org/llama.cpp) SYCL | Level Zero / oneAPI | best llama.cpp speed, long context | Build with `-DGGML_SYCL_F16=ON`: it is off by default and gives about 3.7× prefill ([tuning log](https://github.com/ggml-org/llama.cpp/discussions/27593)). Don't set `GGML_SYCL_ENABLE_OPT=0`; the same log measured it costing about 68% of generation speed. Docker: `ghcr.io/ggml-org/llama.cpp:server-intel`. Prebuilt for the B70 (AOT `bmg-g31`, no oneAPI install): [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds). |
 | llama.cpp Vulkan | Mesa ANV | no oneAPI needed | Keep Mesa current: 26.0.8 → 26.1.7 doubled decode on a B580 ([discussion](https://github.com/ggml-org/llama.cpp/discussions/27777)). Today about 1.7× slower decode than SYCL on a B70, and much slower at long context ([measured](#measured-sycl-vs-vulkan-on-a-b70)); see also the bug table. |
 | [vLLM](https://github.com/vllm-project/vllm) XPU | PyTorch XPU + vllm-xpu-kernels | many users, MTP, 262K context | Official image `vllm/vllm-openai-xpu`. [Qwen3.8-27B cookbook](https://github.com/riceharvest/b70-qwen38-cookbook) + prebuilt image `ghcr.io/riceharvest/b70-vllm`. |
 | [Intel LLM Scaler](https://github.com/intel/llm-scaler) | Intel's vLLM / ComfyUI builds for B60/B70 | Intel-supported serving and image/video gen | `intel/llm-scaler-vllm` images. 0.26.0-b2 fixes prefix caching with MTP. `intel/llm-scaler-omni` for ComfyUI. |
@@ -121,6 +123,7 @@ most of these are mitigations, not fixes.
 ## Tools
 
 - [b70-doctor](https://github.com/riceharvest/b70-doctor): read-only setup check that prints fixes; `--report` gives a bug-report environment block.
+- [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds): prebuilt llama.cpp for the B70 from GitHub-hosted CI, with checksums. SYCL compiled ahead of time for `bmg-g31` with the oneAPI runtime bundled, and Vulkan with the [B70 fixes](https://github.com/riceharvest/llama.cpp/blob/b70-docs/README.md).
 - [b70-bench](https://github.com/riceharvest/b70-bench): one standard llama.cpp benchmark (SYCL vs Vulkan, 7B/27B/MoE, 32K-depth decode) with a shared [results table](https://github.com/riceharvest/b70-bench/blob/main/RESULTS.md).
 - [b70-launcher](https://github.com/SergiioB/b70-launcher): desktop launcher for B70 inference recipes.
 - [turboquant-xpu](https://github.com/bryanvine/turboquant-xpu): TurboQuant KV-cache quantization ported to XPU.
