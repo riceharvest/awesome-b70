@@ -14,7 +14,7 @@ Measured 2026-10-15 on one Arc Pro B70 (32 GB), Fedora 43. Back to the [performa
 |---|---|---|---|---|---|
 | fp32 GDN state (vLLM default for this model) | 61 of 64 (KV cache full) | 49.3 ms | 1298.7 | 1046 | 2092 |
 | **fp16 GDN state** | **64 of 64** | **42.3 ms** | **1511.5** | **1385** | **2769** |
-| fp16 GDN state, rerun with the exact command below | 64 of 64 | 45.1 ms (from 64 / gen) | 1420 | | 2581 |
+| fp16 GDN state, rerun with the exact command below | (not logged) | 45.1 ms (from 64 / gen) | 1420 | | 2581 |
 
 Expect about **1420-1510 tok/s generation** with the command below (two runs). The first run was through our benchmark
 script; the rerun used the command on this page as written.
