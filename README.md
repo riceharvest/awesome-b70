@@ -154,9 +154,9 @@ most of these are mitigations, not fixes.
 
 ## Tools
 
-- [b70-doctor](https://github.com/riceharvest/b70-doctor): read-only setup check that prints fixes; `--report` gives a bug-report environment block.
+- [b70-doctor](https://github.com/riceharvest/b70-doctor): read-only setup check that prints fixes (including the exact Mesa 26 update for your distro, outdated B70 images, and the fp16 GDN state flag for vLLM batch serving); `--report` gives a bug-report environment block.
 - [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds): prebuilt llama.cpp for the B70 from GitHub-hosted CI, with checksums. SYCL compiled ahead of time for `bmg-g31` with the oneAPI runtime bundled, and Vulkan with the [B70 fixes](https://github.com/riceharvest/llama.cpp/blob/b70-docs/README.md). Also as a [Docker image](https://github.com/riceharvest/b70-llama-builds#docker-image) with both builds and its own Mesa 26 + compute-runtime, so Vulkan gets the Mesa 26 speed on any host distro.
-- [b70-bench](https://github.com/riceharvest/b70-bench): one standard llama.cpp benchmark (SYCL vs Vulkan, 7B/27B/MoE, 32K-depth decode) with a shared [results table](https://github.com/riceharvest/b70-bench/blob/main/RESULTS.md).
+- [b70-bench](https://github.com/riceharvest/b70-bench): one standard llama.cpp benchmark (SYCL vs Vulkan, 7B/27B/MoE, 32K-depth decode) with a shared [results table](https://github.com/riceharvest/b70-bench/blob/main/RESULTS.md). No build needed: `--prebuilt` downloads the B70 builds, `--docker` runs them from the b70-llama image (any distro, Mesa 26 inside).
 - [b70-launcher](https://github.com/SergiioB/b70-launcher): desktop launcher for B70 inference recipes.
 - [turboquant-xpu](https://github.com/bryanvine/turboquant-xpu): TurboQuant KV-cache quantization ported to XPU.
 - [proxmox-intel-b70-sriov](https://github.com/CraftComputing/proxmox-intel-b70-sriov): SR-IOV on the B70 in Proxmox, to split the card between VMs.
