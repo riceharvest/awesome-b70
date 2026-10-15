@@ -69,6 +69,6 @@ docker exec moe vllm bench serve --backend vllm --base-url http://localhost:8021
   --seed 0 --temperature 0 --percentile-metrics ttft,tpot,itl --metric-percentiles 50,99
 ```
 
-Check the server log shows "Running: 64 reqs" during the run. `B70_LINEAR_FP8_FREE=1` frees the bf16 copies of the
+Check the server log shows "Running: 64 reqs" during the run; [`tput_metric.py`](https://github.com/riceharvest/b70-qwen38-cookbook/blob/main/bench/tput_metric.py) does that from the saved results and log. The quality check above is [`decode_kl.py`](https://github.com/riceharvest/b70-qwen38-cookbook/blob/main/bench/decode_kl.py). `B70_LINEAR_FP8_FREE=1` frees the bf16 copies of the
 fp8-converted layers (more KV cache); it is safe without speculative decoding only.
 {% endraw %}
