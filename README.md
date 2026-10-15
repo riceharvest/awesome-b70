@@ -57,8 +57,20 @@ kernel 7.1.8, Mesa 25.3.6, oneAPI 2025.3. `llama-bench -ngl 99 -sm none -fa 1 -p
 
 SYCL build: `-DGGML_SYCL=ON -DGGML_SYCL_F16=ON -DGGML_SYCL_DEVICE_ARCH=bmg-g31-a0` (AOT for the B70, which also turns on
 the XMX path), oneDNN on. The Vulkan gaps come from known slow paths on Xe2 + Mesa: scalar flash attention (see the bug
-table) and slow mat-vec for some quant types (Q8_0, Q6_K, Q3_K, Q5_0). Fixes for both are being tested and narrow the
-decode gap to about 1.1×. One machine, so treat these as a guide and [add your numbers](https://github.com/riceharvest/b70-bench).
+table) and slow mat-vec for some quant types (Q8_0, Q6_K, Q3_K, Q5_0). One machine, so treat these as a guide and
+[add your numbers](https://github.com/riceharvest/b70-bench).
+
+**Experimental Vulkan fixes** (branches on a llama.cpp fork, not merged upstream, same machine and model):
+
+| test (Qwen3.8-27B) | Vulkan master | with fixes | SYCL master | fix |
+|---|---|---|---|---|
+| decode | 13.2 | **22.7** | 21.9 | [mat-vec loads](https://github.com/riceharvest/llama.cpp/blob/vk-mmvq-u32-loads/B70_RESULTS.md) |
+| decode after 32K context | 11.1 | **17.5**, **19.0** with the FA split | 16.3 | + [decode FA split](https://github.com/riceharvest/llama.cpp/tree/vk-xe-fa-decode-split) |
+| prompt (512 tokens) | 684 | **711** | 868 | [matmul split-k](https://github.com/riceharvest/llama.cpp/tree/vk-xe2-matmul-splitk) |
+
+On a 1.7B Q8_0 model the same fixes take decode from 71.5 to 154 tok/s and prompts from 5464 to 6091. Prompts at long
+context are still far behind SYCL (Intel's prefill kernel in [#29357](https://github.com/ggml-org/llama.cpp/pull/29357)
+doubles them on a B70: 128 → 259 tok/s after 32K). All branches together: [`vk-b70-stack`](https://github.com/riceharvest/llama.cpp/tree/vk-b70-stack).
 
 For speed comparisons between backends on this card, see [Benchmarks](#benchmarks).
 
