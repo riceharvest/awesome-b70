@@ -57,7 +57,9 @@ kernel 7.1.8, Mesa 25.3.6, oneAPI 2025.3. `llama-bench -ngl 99 -sm none -fa 1 -p
 
 SYCL build: `-DGGML_SYCL=ON -DGGML_SYCL_F16=ON -DGGML_SYCL_DEVICE_ARCH=bmg-g31-a0` (AOT for the B70, which also turns on
 the XMX path), oneDNN on. The Vulkan gaps come from known slow paths on Xe2 + Mesa: scalar flash attention (see the bug
-table) and slow mat-vec for some quant types (Q8_0, Q6_K, Q3_K, Q5_0). One machine, so treat these as a guide and
+table) and slow mat-vec for some quant types (Q8_0, Q6_K, Q3_K, Q5_0). These numbers are from Mesa 25.3.6 (the newest
+in Fedora 43). Newer Mesa narrows the gap: [one report](https://jonathanmann.tech/blog/intel-arc-b70-llama-cpp-benchmarks/)
+has Vulkan level with SYCL on Qwen3.6-35B-A3B with Mesa 26.1. One machine, so treat these as a guide and
 [add your numbers](https://github.com/riceharvest/b70-bench).
 
 **Experimental Vulkan fixes** (branches on a llama.cpp fork, not merged upstream, same machine and model):
