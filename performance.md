@@ -19,6 +19,7 @@ time. Measured 2026-10-14/15.
 | Qwen3.8-27B, one user | vLLM + [cookbook](https://github.com/riceharvest/b70-qwen38-cookbook#numbers) | code 113 / prose 66 tok/s, short prompt; 72 at 32K ([cookbook](https://github.com/riceharvest/b70-qwen38-cookbook#numbers)) |
 | Qwen3.8-27B in llama.cpp | Vulkan b70 build on **Mesa 26.2.5** | **25.3** tok/s (SYCL 21.9) ([test 002](results/testq-002-mesa26-vulkan.md)) |
 | long prompts in llama.cpp | SYCL | prompt after 32K context: 720 vs 86 tok/s on Vulkan (27B, Mesa 25) ([hub table](./#measured-sycl-vs-vulkan-on-a-b70)) |
+| NVIDIA Nemotron 3.5 Bolt 74B-A9B (vision) | llama.cpp master Vulkan on **Mesa 26.2**, NVIDIA's 24 GB GGUF + LiLiCorr drafter | **43.2** tok/s decode, **54.4** on code with the drafter, 81.6 total with 4 users ([below](#nemotron-35-bolt-74b-a9b)) |
 | no oneAPI on the machine | Vulkan, with **Mesa 26** | Mesa 26 more than doubles MoE decode vs 25 ([below](#mesa-25-vs-26)) |
 
 Rule of thumb: on Mesa 25.x use llama.cpp SYCL for speed; on Mesa 26 Vulkan is as fast or faster on decode. For MTP in
@@ -76,6 +77,24 @@ an environment flag ([test 006](results/testq-006-sycl-qwen35moe-fusions.md),
 | fork branch, fusions on | **107.9** (+15.5%), greedy output identical |
 
 Not upstream and not in the prebuilt builds yet.
+
+## Nemotron 3.5 Bolt 74B-A9B
+
+NVIDIA's Mamba-2/Transformer LatentMoE (74B, 9B active, vision), the
+[24 GB GGUF](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-GGUF) (2-bit QAT), llama.cpp master
+`620d2225c` (Bolt support: [#30520](https://github.com/ggml-org/llama.cpp/pull/30520)), Vulkan ([details](results/bolt-24gb-b70.md)):
+
+| | Mesa 26.2.5 | Mesa 25.3.6 |
+|---|---|---|
+| decode (tg128) at 0 / 8K / 32K context | **43.2 / 41.7 / 39.0** | 25.0 / 24.9 / 23.3 |
+| prompt (pp512) at 0 / 8K / 32K | 680 / 526 / 326 | 768 / 606 / 303 |
+| llama-server, code / prose answers | 42.8 / 42.4 | 27.3 / 27.3 |
+| + LiLiCorr drafter (`--spec-draft-n-max 6`) | **54.4** / 42.5 | 32.3 / 23.5 |
+| 4 users at once, total | 81.6 | 54.5 |
+
+Mesa 26 is worth ~70% here. Vision works with the mmproj on the CPU (~5 s per image). With the drafter at 32K context
+the card uses 22.9 GiB. SYCL + drafter currently aborts (see [known problems](./#llamacpp)). 3- to 8-bit files made from
+the BF16 weights (for cards with more system RAM) are in progress.
 
 ## vLLM: Qwen3.6-35B-A3B, one request
 
