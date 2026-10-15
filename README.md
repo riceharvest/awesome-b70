@@ -66,13 +66,13 @@ has Vulkan level with SYCL on Qwen3.6-35B-A3B with Mesa 26.1. One machine, so tr
 
 | test (Qwen3.8-27B) | Vulkan master | with fixes | SYCL master | fix |
 |---|---|---|---|---|
-| decode | 13.2 | **22.7** | 21.9 | [mat-vec loads](https://github.com/riceharvest/llama.cpp/blob/vk-mmvq-u32-loads/B70_RESULTS.md) |
+| decode | 13.2 | **22.7** | 21.9 | [mat-vec loads](https://github.com/riceharvest/llama.cpp/blob/b70-docs/branches/vk-mmvq-u32-loads.md) |
 | decode after 32K context | 11.1 | **17.5**, **19.0** with the FA split | 16.3 | + [decode FA split](https://github.com/riceharvest/llama.cpp/tree/vk-xe-fa-decode-split) |
 | prompt (512 tokens) | 684 | **711** | 868 | [matmul split-k](https://github.com/riceharvest/llama.cpp/tree/vk-xe2-matmul-splitk) |
 
 On a 1.7B Q8_0 model the same fixes take decode from 71.5 to 154 tok/s and prompts from 5464 to 6091. Prompts at long
 context are still far behind SYCL (Intel's prefill kernel in [#29357](https://github.com/ggml-org/llama.cpp/pull/29357)
-doubles them on a B70: 128 → 259 tok/s after 32K). All branches together: [`vk-b70-stack`](https://github.com/riceharvest/llama.cpp/tree/vk-b70-stack).
+doubles them on a B70: 128 → 259 tok/s after 32K). All branches together: [`vk-b70-stack`](https://github.com/riceharvest/llama.cpp/tree/vk-b70-stack); how to build and reproduce each one: [branch docs](https://github.com/riceharvest/llama.cpp/blob/b70-docs/README.md).
 
 For speed comparisons between backends on this card, see [Benchmarks](#benchmarks).
 
