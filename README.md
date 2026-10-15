@@ -48,12 +48,12 @@ kernel 7.1.8, Mesa 25.3.6, oneAPI 2025.3. `llama-bench -ngl 99 -sm none -fa 1 -p
 | model | test | Vulkan (Ollama, LM Studio) | SYCL | SYCL is |
 |---|---|---|---|---|
 | Qwen3.8-27B UD-Q4_K_XL | decode | 13.2 | 21.9 | 1.7× faster |
-| | decode after 32K context | 11.1 | 16.3 | 1.5× faster |
-| | prompt (512 tokens) | 684 | 868 | 1.3× faster |
-| | prompt after 8K context | 336 | 809 | 2.4× faster |
-| | prompt after 32K context | 86 | 720 | 8.4× faster |
+| Qwen3.8-27B UD-Q4_K_XL | decode after 32K context | 11.1 | 16.3 | 1.5× faster |
+| Qwen3.8-27B UD-Q4_K_XL | prompt (512 tokens) | 684 | 868 | 1.3× faster |
+| Qwen3.8-27B UD-Q4_K_XL | prompt after 8K context | 336 | 809 | 2.4× faster |
+| Qwen3.8-27B UD-Q4_K_XL | prompt after 32K context | 86 | 720 | 8.4× faster |
 | a 1.7B dense model, Q8_0 | decode | 71.5 | 191 | 2.7× faster |
-| | prompt (512 tokens) | 5291 | 12477 | 2.4× faster |
+| a 1.7B dense model, Q8_0 | prompt (512 tokens) | 5291 | 12477 | 2.4× faster |
 
 SYCL build: `-DGGML_SYCL=ON -DGGML_SYCL_F16=ON -DGGML_SYCL_DEVICE_ARCH=bmg-g31-a0` (AOT for the B70, which also turns on
 the XMX path), oneDNN on. The Vulkan gaps come from known slow paths on Xe2 + Mesa: scalar flash attention (see the bug
