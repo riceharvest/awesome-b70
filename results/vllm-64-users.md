@@ -14,6 +14,10 @@ Measured 2026-10-15 on one Arc Pro B70 (32 GB), Fedora 43. Back to the [performa
 |---|---|---|---|---|---|
 | fp32 GDN state (vLLM default for this model) | 61 of 64 (KV cache full) | 49.3 ms | 1298.7 | 1046 | 2092 |
 | **fp16 GDN state** | **64 of 64** | **42.3 ms** | **1511.5** | **1385** | **2769** |
+| fp16 GDN state, rerun with the exact command below | 64 of 64 | 45.1 ms (from 64 / gen) | 1420 | | 2581 |
+
+Expect about **1420-1510 tok/s generation** with the command below (two runs). The first run was through our benchmark
+script; the rerun used the command on this page as written.
 
 "Requests running at once" is from the engine's own log. Generation as 64 / median TPOT only means something when all 64
 actually run at once; in our MTP runs at 64 concurrency only 4 fit, which makes that formula overstate throughput many times
@@ -42,7 +46,8 @@ one prefill pass. KL divergence of the decode-time distribution from that refere
 | 256-511 | 0.0023, 99.5% | 0.0034, 99.5% |
 | 512+ | 0.0041, 99.5% | 0.0035, 99.5% |
 
-fp16 sits at the fp32 floor, with no growth over 1024 tokens. Greedy text still diverges early from the fp32 run, as it does
+fp16 sits at the fp32 floor, with no growth over 1024 tokens. gsm8k (100 questions): fp16 state 98/100, fp32 state 94/100,
+i.e. no loss (the difference is within run-to-run noise at n=100). Greedy text still diverges early from the fp32 run, as it does
 under any numeric change at near-ties. Not covered: answers much longer than ~1.5K tokens.
 
 ## Reproduce

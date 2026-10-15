@@ -15,7 +15,7 @@ time. Measured 2026-10-14/15.
 |---|---|---|
 | Qwen3.6-35B-A3B, one user, fastest | vLLM + [cookbook image](https://github.com/riceharvest/b70-qwen38-cookbook#qwen36-35b-a3b-moe-on-the-same-stack) `ghcr.io/riceharvest/b70-vllm`, MTP k=4 | **243.7** code / 164.4 prose tok/s ([cookbook](https://github.com/riceharvest/b70-qwen38-cookbook#qwen36-35b-a3b-moe-on-the-same-stack)) |
 | Qwen3.6-35B-A3B in llama.cpp | Vulkan [b70 build](https://github.com/riceharvest/b70-llama-builds) + MTP n=3 | **108.5** tok/s, output identical to no MTP ([test 001](results/testq-001-llama-mtp-35b.md)) |
-| Qwen3.6-35B-A3B, 64 users | vLLM + `--mamba-ssm-cache-dtype float16` | **1511.5** generation, 2769 total tok/s ([below](#vllm-64-concurrent-users)) |
+| Qwen3.6-35B-A3B, 64 users | vLLM + `--mamba-ssm-cache-dtype float16` | **1420-1511** generation, 2581-2769 total tok/s ([below](#vllm-64-concurrent-users)) |
 | Qwen3.8-27B, one user | vLLM + [cookbook](https://github.com/riceharvest/b70-qwen38-cookbook#numbers) | code 113 / prose 66 tok/s, short prompt; 72 at 32K ([cookbook](https://github.com/riceharvest/b70-qwen38-cookbook#numbers)) |
 | Qwen3.8-27B in llama.cpp | Vulkan b70 build on **Mesa 26.2.5** | **25.3** tok/s (SYCL 21.9) ([test 002](results/testq-002-mesa26-vulkan.md)) |
 | long prompts in llama.cpp | SYCL | prompt after 32K context: 720 vs 86 tok/s on Vulkan (27B, Mesa 25) ([hub table](./#measured-sycl-vs-vulkan-on-a-b70)) |
@@ -109,10 +109,10 @@ Qwen3.6-35B-A3B, 64 requests in flight, 512-token prompts and answers, no specul
 | setup | running at once | median time per token | generation (64 / TPOT) | total tok/s |
 |---|---|---|---|---|
 | vLLM default (fp32 GDN state) | 61 of 64 | 49.3 ms | 1298.7 | 2092 |
-| **`--mamba-ssm-cache-dtype float16`** | 64 of 64 | **42.3 ms** | **1511.5** | **2769** |
+| **`--mamba-ssm-cache-dtype float16`** | 64 of 64 | **42.3-45.1 ms** | **1420-1511** | **2581-2769** |
 
 The fp16 state halves the per-request linear-attention state (fp32 by default for Qwen3.5/3.6/3.8); decode quality stays at
-the fp32 noise floor in our check. Best 64-user entry on localmaxxing for this model on one B70: 1139.8.
+the fp32 noise floor in our check (gsm8k 98/100 vs 94/100 for fp32). Two runs: 1511.5 and 1420 generation. Best 64-user entry on localmaxxing for this model on one B70: 1139.8.
 
 ## Tools
 
