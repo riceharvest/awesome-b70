@@ -57,9 +57,9 @@ Measured VRAM replaces these numbers after the B70 runs.
 
 ## Runtimes
 
-Needs **llama.cpp b11669+** ([#30520](https://github.com/ggml-org/llama.cpp/pull/30520)). Ollama stable 0.40.4 can't
-load it; the pre-release [0.40.5-rc2](https://github.com/ollama/ollama/releases/tag/v0.40.5-rc2) bundles b11669 (not
-tested by us). LM Studio: not verified. The [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds) release
+Needs **llama.cpp b11669+** ([#30520](https://github.com/ggml-org/llama.cpp/pull/30520)). Ollama needs
+[0.40.5+](https://github.com/ollama/ollama/releases/tag/v0.40.5) (bundles b11669; not tested by us), and `ollama run hf.co/...`
+only pulls files stored as one GGUF: the Hugging Face registry refuses split (`-0000N-of-`) files. LM Studio: not verified. The [b70-llama-builds](https://github.com/riceharvest/b70-llama-builds) release
 is not on b11669 yet (a Bolt update is waiting for a GPU test); build upstream for now (see
 [bolt-24gb-b70.md](bolt-24gb-b70.md#build)).
 

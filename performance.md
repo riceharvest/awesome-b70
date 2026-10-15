@@ -100,8 +100,8 @@ the card uses 22.9 GiB. SYCL + drafter currently aborts (see [known problems](./
 
 Our [3- to 8-bit ladder](https://huggingface.co/darioooooo0o/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-GGUF), quantized from
 NVIDIA's BF16 checkpoint ([quality, memory and method](results/bolt-gguf-ladder.md)). On the Hub now: **Q4_K_M**.
-Coming: IQ3_XXS, Q3_K_M, IQ4_XS, Q5_K_M, Q6_K, Q8_0. Needs llama.cpp b11669+ (Ollama only from the 0.40.5-rc2
-pre-release, untested; LM Studio unverified; the b70-llama-builds release is not on b11669 yet, see
+Coming: IQ3_XXS, Q3_K_M, IQ4_XS, Q5_K_M, Q6_K, Q8_0. Needs llama.cpp b11669+ (Ollama 0.40.5+, untested, single-file
+GGUFs only for `hf.co/` pulls; LM Studio unverified; the b70-llama-builds release is not on b11669 yet, see
 [known problems](./#llamacpp)). **B70 speed: pending.**
 
 Which file: the experts that don't fit in VRAM stay in system RAM (`-ncmoe`). Weights + 32K context + buffers,
