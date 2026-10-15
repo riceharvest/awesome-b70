@@ -22,8 +22,10 @@ Last reviewed **2026-10-15**. The status badges in the bug table are live. Corre
    SergiioB's cookbook has its own [`doctor.py`](https://github.com/SergiioB/intel-arc-pro-b70-inference-cookbook/blob/master/scripts/doctor.py),
    which adds dual-card oneCCL hints for vLLM TP2.
 2. **Turn on Resizable BAR** in the BIOS ("Above 4G Decoding" + "Re-Size BAR Support", CSM off). The doctor tells you if it's off.
-3. **Pick an engine** from the table below. If you just want to chat, use Ollama or LM Studio. If you want speed and
-   control, use llama.cpp with SYCL. To serve many users or long context, use vLLM.
+3. **Pick an engine** from the table below. If you just want to chat, use Ollama or LM Studio. **If you want speed,
+   use llama.cpp with SYCL:** on a B70 it decodes about 1.7× faster than the Vulkan path that Ollama and LM Studio use,
+   and handles long prompts up to 8× faster ([measured below](#measured-sycl-vs-vulkan-on-a-b70)). To serve many users
+   or long context, use vLLM.
 4. **Skim the [known problems](#known-problems-and-workarounds)** before you lose an evening to one of them.
 
 ## Pick an engine
@@ -33,10 +35,30 @@ Last reviewed **2026-10-15**. The status badges in the bug table are live. Corre
 | [Ollama](https://github.com/ollama/ollama) | Vulkan (on by default when the backend is installed) | easiest start | Needs Mesa's Intel Vulkan driver. The `ollama` user needs access to `/dev/dri/renderD*` (the render group; Ollama's docs mention this for AMD, and it's the same permission). `sudo setcap cap_perfmon+ep /usr/local/bin/ollama` lets it see free VRAM ([docs](https://github.com/ollama/ollama/blob/main/docs/gpu.mdx)). SYCL support is only a [proposal](https://github.com/ollama/ollama/issues/16930). |
 | [LM Studio](https://lmstudio.ai) | Vulkan llama.cpp runtime | GUI, model browser | Same Vulkan caveats as llama.cpp Vulkan. |
 | [llama.cpp](https://github.com/ggml-org/llama.cpp) SYCL | Level Zero / oneAPI | best llama.cpp speed, long context | Build with `-DGGML_SYCL_F16=ON`: it is off by default and gives about 3.7× prefill ([tuning log](https://github.com/ggml-org/llama.cpp/discussions/27593)). Don't set `GGML_SYCL_ENABLE_OPT=0`; the same log measured it costing about 68% of generation speed. Docker: `ghcr.io/ggml-org/llama.cpp:server-intel`. |
-| llama.cpp Vulkan | Mesa ANV | no oneAPI needed | Keep Mesa current: 26.0.8 → 26.1.7 doubled decode on a B580 ([discussion](https://github.com/ggml-org/llama.cpp/discussions/27777)). Deep-context speed drops hard; see the bug table. |
+| llama.cpp Vulkan | Mesa ANV | no oneAPI needed | Keep Mesa current: 26.0.8 → 26.1.7 doubled decode on a B580 ([discussion](https://github.com/ggml-org/llama.cpp/discussions/27777)). Today about 1.7× slower decode than SYCL on a B70, and much slower at long context ([measured](#measured-sycl-vs-vulkan-on-a-b70)); see also the bug table. |
 | [vLLM](https://github.com/vllm-project/vllm) XPU | PyTorch XPU + vllm-xpu-kernels | many users, MTP, 262K context | Official image `vllm/vllm-openai-xpu`. [Qwen3.8-27B cookbook](https://github.com/riceharvest/b70-qwen38-cookbook) + prebuilt image `ghcr.io/riceharvest/b70-vllm`. |
 | [Intel LLM Scaler](https://github.com/intel/llm-scaler) | Intel's vLLM / ComfyUI builds for B60/B70 | Intel-supported serving and image/video gen | `intel/llm-scaler-vllm` images. 0.26.0-b2 fixes prefix caching with MTP. `intel/llm-scaler-omni` for ComfyUI. |
 | OpenVINO | OpenVINO GenAI | an alternative to vLLM | Measured on a B70 in [SergiioB's cookbook](https://github.com/SergiioB/intel-arc-pro-b70-inference-cookbook/blob/master/docs/qwen38-27b/OPENVINO-B70-TUNING.md). |
+
+### Measured: SYCL vs Vulkan on a B70
+
+llama.cpp master `a0e6dc738` (2026-10-14), both backends built from the same commit, one Arc Pro B70, Fedora 43,
+kernel 7.1.8, Mesa 25.3.6, oneAPI 2025.3. `llama-bench -ngl 99 -sm none -fa 1 -p 512 -n 128 -r 3`, tokens/s.
+
+| model | test | Vulkan (Ollama, LM Studio) | SYCL | SYCL is |
+|---|---|---|---|---|
+| Qwen3.8-27B UD-Q4_K_XL | decode | 13.2 | 21.9 | 1.7× faster |
+| | decode after 32K context | 11.1 | 16.3 | 1.5× faster |
+| | prompt (512 tokens) | 684 | 868 | 1.3× faster |
+| | prompt after 8K context | 336 | 809 | 2.4× faster |
+| | prompt after 32K context | 86 | 720 | 8.4× faster |
+| a 1.7B dense model, Q8_0 | decode | 71.5 | 191 | 2.7× faster |
+| | prompt (512 tokens) | 5291 | 12477 | 2.4× faster |
+
+SYCL build: `-DGGML_SYCL=ON -DGGML_SYCL_F16=ON -DGGML_SYCL_DEVICE_ARCH=bmg-g31-a0` (AOT for the B70, which also turns on
+the XMX path), oneDNN on. The Vulkan gaps come from known slow paths on Xe2 + Mesa: scalar flash attention (see the bug
+table) and slow mat-vec for some quant types (Q8_0, Q6_K, Q3_K, Q5_0). Fixes for both are being tested and narrow the
+decode gap to about 1.1×. One machine, so treat these as a guide and [add your numbers](https://github.com/riceharvest/b70-bench).
 
 For speed comparisons between backends on this card, see [Benchmarks](#benchmarks).
 
