@@ -156,6 +156,7 @@ Intel's [llm-scaler](https://github.com/intel/llm-scaler) release notes list the
 
 ## Benchmarks
 
+- [B70 leaderboard](leaderboard.md): the fastest submitted B70 runs from localmaxxing.com (model, engine, quant, tok/s, flags, repro links), rebuilt daily, with how to reproduce the top runs.
 - [b70-bench results](https://github.com/riceharvest/b70-bench/blob/main/RESULTS.md) (collecting first results): SYCL and Vulkan side by side, 27B and MoE, decode after 8K/32K context, with driver and firmware per row. Run it and add yours.
 - [PMZFX/intel-arc-pro-b70-benchmarks](https://github.com/PMZFX/intel-arc-pro-b70-benchmarks): many llama.cpp SYCL measurements, dual-GPU scaling, video generation.
 - llama.cpp scoreboards: [Vulkan](https://github.com/ggml-org/llama.cpp/discussions/10879) and [SYCL](https://github.com/ggml-org/llama.cpp/discussions/23313) (Llama-2-7B, compare across GPUs).

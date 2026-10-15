@@ -1,0 +1,30 @@
+name: leaderboard
+on:
+  schedule:
+    - cron: "41 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [scripts/leaderboard.py, .github/workflows/leaderboard.yml]
+permissions:
+  contents: write
+concurrency:
+  group: leaderboard
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build leaderboard.md from localmaxxing.com
+        run: python3 scripts/leaderboard.py leaderboard.md
+      - name: Commit if changed
+        run: |
+          # the date line changes every day; only commit when the runs themselves changed
+          if git diff --quiet -I '^Fastest submitted runs' -- leaderboard.md && git ls-files --error-unmatch leaderboard.md >/dev/null 2>&1; then
+            echo "no change"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add leaderboard.md
+          git commit -m "leaderboard: update from localmaxxing.com"
+          git push
