@@ -136,6 +136,9 @@ def details(rows, n):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
+        print(__doc__.strip())
+        return
     out_path = sys.argv[1] if len(sys.argv) > 1 else "leaderboard.md"
     rows = [r for r in fetch_all() if r.get("status") == "APPROVED"]
     one = best_per_setup([r for r in rows if single_stream(r) and (r.get("hardware") or {}).get("gpuCount") == 1])
